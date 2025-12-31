@@ -13,45 +13,39 @@
 
 <body>
     <div class="container">
-        <h1>🎛️ Relay Control Panel</h1>
+        <h1>🎛️ Relay Control</h1>
 
-        <div class="status-bar disconnected" id="statusBar" aria-live="polite">
-            📡 Disconnected - Configure IP below
+        <div class="status-bar" id="statusBar">
+            <span id="statusText">🔄 Connecting to Firebase...</span>
         </div>
 
-        <div class="config-section">
-            <h3>⚙️ ESP8266 Configuration</h3>
-            <div class="input-group">
-                <input type="text" id="ipInput" placeholder="192.168.1.100" value="">
+        <!-- Relay 1 -->
+        <div class="relay-card">
+            <div class="relay-header">
+                <span class="relay-title">💡 Relay 1</span>
+                <span class="relay-status off" id="relay1Status">OFF</span>
             </div>
-            <button class="btn-primary" onclick="connectToESP()">Connect</button>
-            <div class="info-text">Enter your ESP8266 IP address from Serial Monitor</div>
+            <div class="button-group">
+                <button class="btn-on" onclick="controlRelay(1, true)" id="relay1OnBtn">Turn ON</button>
+                <button class="btn-off" onclick="controlRelay(1, false)" id="relay1OffBtn">Turn OFF</button>
+            </div>
         </div>
 
-        <div id="controlSection" style="display: none;">
-            <!-- Relay 1 -->
-            <div class="relay-card">
-                <div class="relay-header">
-                    <span class="relay-title">💡 Relay 1</span>
-                    <span class="relay-status off" id="relay1Status">OFF</span>
-                </div>
-                <div class="button-group">
-                    <button class="btn-on" onclick="controlRelay(1, 'on')">Turn ON</button>
-                    <button class="btn-off" onclick="controlRelay(1, 'off')">Turn OFF</button>
-                </div>
+        <!-- Relay 2 -->
+        <div class="relay-card">
+            <div class="relay-header">
+                <span class="relay-title">💡 Relay 2</span>
+                <span class="relay-status off" id="relay2Status">OFF</span>
             </div>
+            <div class="button-group">
+                <button class="btn-on" onclick="controlRelay(2, true)" id="relay2OnBtn">Turn ON</button>
+                <button class="btn-off" onclick="controlRelay(2, false)" id="relay2OffBtn">Turn OFF</button>
+            </div>
+        </div>
 
-            <!-- Relay 2 -->
-            <div class="relay-card">
-                <div class="relay-header">
-                    <span class="relay-title">💡 Relay 2</span>
-                    <span class="relay-status off" id="relay2Status">OFF</span>
-                </div>
-                <div class="button-group">
-                    <button class="btn-on" onclick="controlRelay(2, 'on')">Turn ON</button>
-                    <button class="btn-off" onclick="controlRelay(2, 'off')">Turn OFF</button>
-                </div>
-            </div>
+        <div class="footer">
+            🌍 Global Access via Firebase<br>
+            Updates in real-time
         </div>
     </div>
 </body>

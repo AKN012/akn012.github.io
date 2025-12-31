@@ -1,102 +1,74 @@
-let ESP_IP = '';
+ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-// Load saved IP from localStorage
-window.addEventListener('load', function () {
-    const savedIP = localStorage.getItem('esp_ip');
-    if (savedIP) {
-        document.getElementById('ipInput').value = savedIP;
-        ESP_IP = savedIP;
-    }
-});
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdD-hqpfHTV6n41lZ3ZJ7Hfi4OuttDMS0",
+            authDomain: "esp8266-relay-75b18.firebaseapp.com",
+            databaseURL: "https://esp8266-relay-75b18-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "esp8266-relay-75b18",
+            storageBucket: "esp8266-relay-75b18.firebasestorage.app",
+            messagingSenderId: "715957690048",
+            appId: "1:715957690048:web:fbb35ed7bb8ceafb599725"
+        };
 
-function connectToESP() {
-    const ip = document.getElementById('ipInput').value.trim();
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-    if (!ip) {
-        alert('Please enter an IP address');
-        return;
-    }
+        // Update status bar
+        function updateStatusBar(online) {
+            const statusBar = document.getElementById('statusBar');
+            const statusText = document.getElementById('statusText');
+            
+            if (online) {
+                statusBar.className = 'status-bar online';
+                statusText.textContent = '✅ Connected - ESP8266 Online';
+            } else {
+                statusBar.className = 'status-bar';
+                statusText.textContent = '📡 Connected to Firebase';
+            }
+        }
 
-    ESP_IP = ip;
-    localStorage.setItem('esp_ip', ip);
-
-    if (location.protocol === 'https:') {
-        alert('Page is loaded over HTTPS. Browser may block requests to http:// local devices (mixed content).');
-    }
-
-    // Test connection
-    fetch(`http://${ESP_IP}/status`)
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById('statusBar').className = 'status-bar connected';
-            document.getElementById('statusBar').innerHTML = '✅ Connected to ' + ip;
-            document.getElementById('controlSection').style.display = 'block';
-            updateStatus();
-        })
-        .catch(error => {
-            document.getElementById('statusBar').className = 'status-bar disconnected';
-            document.getElementById('statusBar').innerHTML = '❌ Connection failed - ' + error.message;
-            alert('Could not connect to ESP8266. Make sure:\n1. IP address is correct\n2. ESP8266 is powered on\n3. You are on the same WiFi network');
+        // Listen for relay status changes
+        onValue(ref(database, 'relays/relay1'), (snapshot) => {
+            const state = snapshot.val();
+            const statusEl = document.getElementById('relay1Status');
+            statusEl.textContent = state ? 'ON' : 'OFF';
+            statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
         });
-}
 
-function controlRelay(relay, action) {
-    if (!ESP_IP) {
-        alert('Please connect to ESP8266 first');
-        return;
-    }
-
-    const buttons = document.querySelectorAll('.button-group button');
-    buttons.forEach(btn => btn.disabled = true);
-
-    fetch(`http://${ESP_IP}/relay${relay}/${action}`)
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Success:', data);
-            updateStatus();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Command failed - Check connection');
-        })
-        .finally(() => {
-            buttons.forEach(btn => btn.disabled = false);
+        onValue(ref(database, 'relays/relay2'), (snapshot) => {
+            const state = snapshot.val();
+            const statusEl = document.getElementById('relay2Status');
+            statusEl.textContent = state ? 'ON' : 'OFF';
+            statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
         });
-}
 
-function updateStatus() {
-    if (!ESP_IP) return;
-
-    fetch(`http://${ESP_IP}/status`)
-        .then(response => {
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            return response.json();
-        })
-        .then(data => {
-            // Update Relay 1
-            const relay1Status = document.getElementById('relay1Status');
-            relay1Status.textContent = data.relay1;
-            relay1Status.className = 'relay-status ' + (data.relay1 === 'ON' ? 'on' : 'off');
-
-            // Update Relay 2
-            const relay2Status = document.getElementById('relay2Status');
-            relay2Status.textContent = data.relay2;
-            relay2Status.className = 'relay-status ' + (data.relay2 === 'ON' ? 'on' : 'off');
-        })
-        .catch(error => {
-            console.error('Status update failed:', error);
+        // Listen for connection status
+        onValue(ref(database, 'status/connection'), (snapshot) => {
+            const status = snapshot.val();
+            updateStatusBar(status === 'online');
         });
-}
 
-// Auto-refresh status every 3 seconds
-setInterval(() => {
-    if (ESP_IP && document.getElementById('controlSection').style.display !== 'none') {
-        updateStatus();
-    }
-}, 3000);
+        // Control relay function
+        window.controlRelay = async function(relay, state) {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            try {
+                await set(ref(database, `relays/relay${relay}`), state);
+                console.log(`Relay ${relay} set to ${state ? 'ON' : 'OFF'}`);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to control relay. Please try again.');
+            } finally {
+                setTimeout(() => {
+                    buttons.forEach(btn => btn.disabled = false);
+                }, 500);
+            }
+        };
+
+        // Initial status
+        updateStatusBar(false);
+        console.log('Firebase initialized successfully');

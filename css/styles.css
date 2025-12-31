@@ -1,249 +1,155 @@
-:root {
-    --bg-start: #667eea;
-    --bg-end: #764ba2;
-    --container-bg: #ffffff;
-    --muted: #666666;
-    --primary: #667eea;
-    --primary-hover: #5568d3;
-    --success: #28a745;
-    --success-hover: #218838;
-    --danger: #dc3545;
-    --danger-hover: #c82333;
-    --shadow: rgba(0, 0, 0, 0.3);
-    --radius: 10px;
-    --gap: 10px;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-body {
-    -webkit-font-smoothing: antialiased;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
 
- .container {
-     background: var(--container-bg);
-     border-radius: 20px;
-     padding: 40px;
-     box-shadow: 0 20px 60px var(--shadow);
-     max-width: 500px;
-     width: 100%;
- }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
 
- h1 {
-     text-align: center;
-     color: #333;
-     margin-bottom: 10px;
-     font-size: 28px;
- }
+        .status-bar {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
 
- .status-bar {
-     background: #f0f0f0;
-     padding: 15px;
-     border-radius: var(--radius);
-     margin-bottom: 30px;
-     text-align: center;
- }
+        .status-bar.online {
+            background: #d4edda;
+            color: #155724;
+        }
 
- .status-bar.connected {
-     background: #d4edda;
-     color: #155724;
- }
+        .relay-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
 
- .status-bar.disconnected {
-     background: #f8d7da;
-     color: #721c24;
- }
+        .relay-card:hover {
+            transform: translateY(-2px);
+        }
 
- .config-section {
-     background: #f8f9fa;
-     padding: 20px;
-     border-radius: var(--radius);
-     margin-bottom: 30px;
- }
+        .relay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
- .config-section h3 {
-     margin-bottom: 15px;
-     color: #555;
-     font-size: 16px;
- }
+        .relay-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
 
- .input-group {
-     display: flex;
-     gap: var(--gap);
-     margin-bottom: 10px;
- }
+        .relay-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
 
- input {
-     flex: 1;
-     padding: 12px;
-     border: 2px solid #ddd;
-     border-radius: 8px;
-     font-size: 14px;
- }
+        .relay-status.on {
+            background: #28a745;
+            color: white;
+        }
 
- input:focus-visible {
-     outline: 3px solid rgba(102, 126, 234, 0.25);
-     outline-offset: 2px;
- }
+        .relay-status.off {
+            background: #dc3545;
+            color: white;
+        }
 
- .relay-card {
-     background: #f8f9fa;
-     padding: 25px;
-     border-radius: 15px;
-     margin-bottom: 20px;
-     transition: transform 0.2s, box-shadow 0.2s;
- }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
 
- .relay-card:hover {
-     transform: translateY(-2px);
- }
+        button {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
 
- .relay-header {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     margin-bottom: 20px;
- }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
- .relay-title {
-     font-size: 20px;
-     font-weight: bold;
-     color: #333;
- }
+        button:active:not(:disabled) {
+            transform: scale(0.95);
+        }
 
- .relay-status {
-     padding: 8px 16px;
-     border-radius: 20px;
-     font-size: 14px;
-     font-weight: bold;
- }
+        .btn-on {
+            background: #28a745;
+            color: white;
+        }
 
- .relay-status.on {
-     background: #28a745;
-     color: white;
- }
+        .btn-on:hover:not(:disabled) {
+            background: #218838;
+        }
 
- .relay-status.off {
-     background: #dc3545;
-     color: white;
- }
+        .btn-off {
+            background: #dc3545;
+            color: white;
+        }
 
- .button-group {
-     display: grid;
-     grid-template-columns: 1fr 1fr;
-     gap: 15px;
- }
+        .btn-off:hover:not(:disabled) {
+            background: #c82333;
+        }
 
- button {
-     padding: 15px;
-     border: none;
-     border-radius: 10px;
-     font-size: 16px;
-     font-weight: bold;
-     cursor: pointer;
-     transition: transform 0.2s, background-color 0.2s, opacity 0.2s;
-     text-transform: uppercase;
- }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
 
- button:disabled {
-     opacity: 0.5;
-     cursor: not-allowed;
- }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
 
- button:focus-visible {
-     outline: 3px solid rgba(102, 126, 234, 0.25);
-     outline-offset: 2px;
- }
-
- .btn-on {
-     background: var(--success);
-     color: white;
- }
-
- .btn-on:hover:not(:disabled) {
-     background: var(--success-hover);
-     transform: scale(1.03);
- }
-
- .btn-off {
-     background: var(--danger);
-     color: white;
- }
-
- .btn-off:hover:not(:disabled) {
-     background: var(--danger-hover);
-     transform: scale(1.03);
- }
-
- .btn-primary {
-     background: var(--primary);
-     color: white;
-     width: 100%;
-     margin-top: 10px;
- }
-
- .btn-primary:hover {
-     background: var(--primary-hover);
- }
-
- .info-text {
-     text-align: center;
-     color: var(--muted);
-     font-size: 14px;
-     margin-top: 20px;
- }
-
- .loading {
-     display: inline-block;
-     width: 20px;
-     height: 20px;
-     border: 3px solid #f3f3f3;
-     border-top: 3px solid var(--primary);
-     border-radius: 50%;
-     animation: spin 1s linear infinite;
-     margin-left: 10px;
- }
-
- @keyframes spin {
-     0% {
-         transform: rotate(0deg);
-     }
-
-     100% {
-         transform: rotate(360deg);
-     }
- }
-
- /* Respect users who prefer reduced motion */
- @media (prefers-reduced-motion: reduce) {
-     .relay-card,
-     button:hover:not(:disabled) {
-         transform: none !important;
-     }
-
-     .loading {
-         animation: none !important;
-     }
- }
-
- /* Responsive: reduce padding on small screens */
- @media (max-width: 420px) {
-     .container {
-         padding: 20px;
-     }
-
-     .relay-card {
-         padding: 16px;
-     }
- }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
