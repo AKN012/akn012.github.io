@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP8266 Relay Control</title>
+    <title>Secure Relay Control</title>
     <style>
         * {
             margin: 0;
@@ -37,19 +37,75 @@
             font-size: 28px;
         }
 
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .login-section {
+            margin-bottom: 30px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #5568d3;
+        }
+
+        .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .control-section {
+            display: none;
+        }
+
         .status-bar {
-            background: #f0f0f0;
+            background: #d4edda;
+            color: #155724;
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 30px;
             text-align: center;
             font-size: 14px;
-            color: #666;
-        }
-
-        .status-bar.online {
-            background: #d4edda;
-            color: #155724;
         }
 
         .relay-card {
@@ -138,6 +194,18 @@
             background: #c82333;
         }
 
+        .btn-logout {
+            width: 100%;
+            padding: 12px;
+            background: #6c757d;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-logout:hover {
+            background: #5a6268;
+        }
+
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -145,67 +213,80 @@
             font-size: 12px;
         }
 
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .security-info {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎛️ Relay Control</h1>
-        
-        <div class="status-bar" id="statusBar">
-            <span id="statusText">🔄 Connecting to Firebase...</span>
+        <h1>🔒 Secure Relay Control</h1>
+        <div class="subtitle">Password Protected Access</div>
+
+        <!-- Login Section -->
+        <div class="login-section" id="loginSection">
+            <div class="security-info">
+                🔑 Password is stored in Google Sheets
+            </div>
+            <div class="error-message" id="errorMessage">Invalid password</div>
+            <input type="password" 
+                   class="password-input" 
+                   id="passwordInput" 
+                   placeholder="Enter password"
+                   onkeypress="if(event.key === 'Enter') login()">
+            <button class="btn-login" onclick="login()" id="loginBtn">Login</button>
         </div>
 
-        <!-- Relay 1 -->
-        <div class="relay-card">
-            <div class="relay-header">
-                <span class="relay-title">💡 Relay 1</span>
-                <span class="relay-status off" id="relay1Status">OFF</span>
+        <!-- Control Section (Hidden until authenticated) -->
+        <div class="control-section" id="controlSection">
+            <div class="status-bar">
+                ✅ Authenticated - Access Granted
             </div>
-            <div class="button-group">
-                <button class="btn-on" onclick="controlRelay(1, true)" id="relay1OnBtn">Turn ON</button>
-                <button class="btn-off" onclick="controlRelay(1, false)" id="relay1OffBtn">Turn OFF</button>
-            </div>
-        </div>
 
-        <!-- Relay 2 -->
-        <div class="relay-card">
-            <div class="relay-header">
-                <span class="relay-title">💡 Relay 2</span>
-                <span class="relay-status off" id="relay2Status">OFF</span>
+            <!-- Relay 1 -->
+            <div class="relay-card">
+                <div class="relay-header">
+                    <span class="relay-title">💡 Relay 1</span>
+                    <span class="relay-status off" id="relay1Status">OFF</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-on" onclick="controlRelay(1, true)">Turn ON</button>
+                    <button class="btn-off" onclick="controlRelay(1, false)">Turn OFF</button>
+                </div>
             </div>
-            <div class="button-group">
-                <button class="btn-on" onclick="controlRelay(2, true)" id="relay2OnBtn">Turn ON</button>
-                <button class="btn-off" onclick="controlRelay(2, false)" id="relay2OffBtn">Turn OFF</button>
-            </div>
-        </div>
 
-        <div class="footer">
-            🌍 Global Access via Firebase<br>
-            Updates in real-time
+            <!-- Relay 2 -->
+            <div class="relay-card">
+                <div class="relay-header">
+                    <span class="relay-title">💡 Relay 2</span>
+                    <span class="relay-status off" id="relay2Status">OFF</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-on" onclick="controlRelay(2, true)">Turn ON</button>
+                    <button class="btn-off" onclick="controlRelay(2, false)">Turn OFF</button>
+                </div>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+
+            <div class="footer">
+                🔒 Secure Session Active<br>
+                Changes logged to Google Sheets
+            </div>
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAdD-hqpfHTV6n41lZ3ZJ7Hfi4OuttDMS0",
             authDomain: "esp8266-relay-75b18.firebaseapp.com",
@@ -216,47 +297,95 @@
             appId: "1:715957690048:web:fbb35ed7bb8ceafb599725"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Update status bar
-        function updateStatusBar(online) {
-            const statusBar = document.getElementById('statusBar');
-            const statusText = document.getElementById('statusText');
-            
-            if (online) {
-                statusBar.className = 'status-bar online';
-                statusText.textContent = '✅ Connected - ESP8266 Online';
-            } else {
-                statusBar.className = 'status-bar';
-                statusText.textContent = '📡 Connected to Firebase';
+        let isAuthenticated = false;
+
+        // Check if already authenticated (from previous session)
+        window.addEventListener('load', async () => {
+            const savedAuth = sessionStorage.getItem('authenticated');
+            if (savedAuth === 'true') {
+                await checkAuthStatus();
+            }
+        });
+
+        // Check authentication status from Firebase
+        async function checkAuthStatus() {
+            try {
+                const snapshot = await get(ref(database, '/security/authenticated'));
+                if (snapshot.val() === true) {
+                    showControlPanel();
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
             }
         }
 
-        // Listen for relay status changes
-        onValue(ref(database, 'relays/relay1'), (snapshot) => {
-            const state = snapshot.val();
-            const statusEl = document.getElementById('relay1Status');
-            statusEl.textContent = state ? 'ON' : 'OFF';
-            statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
-        });
+        // Login function
+        window.login = async function() {
+            const password = document.getElementById('passwordInput').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMessage');
 
-        onValue(ref(database, 'relays/relay2'), (snapshot) => {
-            const state = snapshot.val();
-            const statusEl = document.getElementById('relay2Status');
-            statusEl.textContent = state ? 'ON' : 'OFF';
-            statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
-        });
+            if (!password) {
+                errorMsg.textContent = 'Please enter password';
+                errorMsg.style.display = 'block';
+                return;
+            }
 
-        // Listen for connection status
-        onValue(ref(database, 'status/connection'), (snapshot) => {
-            const status = snapshot.val();
-            updateStatusBar(status === 'online');
-        });
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Verifying...';
+            errorMsg.style.display = 'none';
 
-        // Control relay function
+            try {
+                // Get password from Firebase
+                const snapshot = await get(ref(database, '/security/password'));
+                const storedPassword = snapshot.val();
+
+                if (password === storedPassword) {
+                    // Correct password
+                    await set(ref(database, '/security/authenticated'), true);
+                    sessionStorage.setItem('authenticated', 'true');
+                    showControlPanel();
+                } else {
+                    // Wrong password
+                    errorMsg.textContent = '❌ Invalid password';
+                    errorMsg.style.display = 'block';
+                    document.getElementById('passwordInput').value = '';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMsg.textContent = 'Connection error. Try again.';
+                errorMsg.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        };
+
+        // Show control panel
+        function showControlPanel() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('controlSection').style.display = 'block';
+            isAuthenticated = true;
+            startListening();
+        }
+
+        // Logout
+        window.logout = async function() {
+            await set(ref(database, '/security/authenticated'), false);
+            sessionStorage.removeItem('authenticated');
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('controlSection').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+            isAuthenticated = false;
+        };
+
+        // Control relay
         window.controlRelay = async function(relay, state) {
+            if (!isAuthenticated) return;
+
             const buttons = document.querySelectorAll('button');
             buttons.forEach(btn => btn.disabled = true);
 
@@ -265,7 +394,7 @@
                 console.log(`Relay ${relay} set to ${state ? 'ON' : 'OFF'}`);
             } catch (error) {
                 console.error('Error:', error);
-                alert('Failed to control relay. Please try again.');
+                alert('Failed to control relay');
             } finally {
                 setTimeout(() => {
                     buttons.forEach(btn => btn.disabled = false);
@@ -273,9 +402,31 @@
             }
         };
 
-        // Initial status
-        updateStatusBar(false);
-        console.log('Firebase initialized successfully');
+        // Start listening to relay status
+        function startListening() {
+            onValue(ref(database, 'relays/relay1'), (snapshot) => {
+                const state = snapshot.val();
+                const statusEl = document.getElementById('relay1Status');
+                statusEl.textContent = state ? 'ON' : 'OFF';
+                statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
+            });
+
+            onValue(ref(database, 'relays/relay2'), (snapshot) => {
+                const state = snapshot.val();
+                const statusEl = document.getElementById('relay2Status');
+                statusEl.textContent = state ? 'ON' : 'OFF';
+                statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
+            });
+
+            // Listen for logout from other devices
+            onValue(ref(database, '/security/authenticated'), (snapshot) => {
+                if (snapshot.val() === false && isAuthenticated) {
+                    logout();
+                }
+            });
+        }
+
+        console.log('Secure relay control initialized');
     </script>
 </body>
 </html>
