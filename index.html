@@ -289,7 +289,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         const firebaseConfig = {
@@ -306,154 +306,68 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
 
-        // Login Function
-        function login() {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-
-            auth.signInWithEmailAndPassword(email, pass)
-                .then((userCredential) => {
-                    // Successfully logged in!
-                    document.getElementById('login-form').style.display = 'none';
-                    document.getElementById('controls').style.display = 'block';
-                    startListeningToRelays(); // Call your function that reads relay states
-                })
-                .catch((error) => {
-                    alert("Login failed: " + error.message);
-                });
-        }
-        let isAuthenticated = false;
-
-        // Check if already authenticated (from previous session)
-        // Automatically handles showing/hiding UI based on login status
+        // --- THE TRUTH SOURCE: Auth State Listener ---
         onAuthStateChanged(auth, (user) => {
+            const loginSection = document.getElementById('loginSection');
+            const controlSection = document.getElementById('controlSection');
+
             if (user) {
-                // User is signed in!
-                showControlPanel();
-                console.log("Authenticated as:", user.email);
+                console.log("Status: Authenticated as", user.email);
+                loginSection.style.display = 'none';
+                controlSection.style.display = 'block';
+                startListening(); // Start real-time updates
             } else {
-                // User is signed out
-                document.getElementById('loginSection').style.display = 'block';
-                document.getElementById('controlSection').style.display = 'none';
-                isAuthenticated = false;
+                console.log("Status: Signed Out");
+                loginSection.style.display = 'block';
+                controlSection.style.display = 'none';
             }
         });
 
-        // Check authentication status from Firebase
-        async function checkAuthStatus() {
-            try {
-                const snapshot = await get(ref(database, '/security/authenticated'));
-                if (snapshot.val() === true) {
-                    showControlPanel();
-                }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-            }
-        }
-
-        // Login function
-        // Updated Login function
+        // --- ACTIONS ---
         window.login = async function () {
-            const email = "naciongayoandrekyn@gmail.com"; // Use the email you added in Firebase Console
+            const email = "admin@yourproject.com"; // MUST match the email in Firebase Console
             const password = document.getElementById('passwordInput').value;
             const loginBtn = document.getElementById('loginBtn');
             const errorMsg = document.getElementById('errorMessage');
-
-            if (!password) {
-                errorMsg.textContent = 'Please enter password';
-                errorMsg.style.display = 'block';
-                return;
-            }
 
             loginBtn.disabled = true;
             loginBtn.textContent = 'Verifying...';
 
             try {
-                // This is the "Magic" that satisfies the "auth != null" rule
                 await signInWithEmailAndPassword(auth, email, password);
-                // showControlPanel() will be called automatically by the listener below
             } catch (error) {
-                console.error('Login error:', error);
-                errorMsg.textContent = '❌ Access Denied: ' + error.code;
+                errorMsg.textContent = "❌ Error: " + error.code;
                 errorMsg.style.display = 'block';
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Login';
             }
         };
 
-        // Updated Logout
-        window.logout = async function () {
-            try {
-                await signOut(auth);
-                location.reload(); // Refresh to clear all states
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        };
+        window.logout = () => signOut(auth);
 
-        // Show control panel
-        function showControlPanel() {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('controlSection').style.display = 'block';
-            isAuthenticated = true;
-            startListening();
-        }
-
-        // Logout
-        window.logout = async function () {
-            await set(ref(database, '/security/authenticated'), false);
-            sessionStorage.removeItem('authenticated');
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('controlSection').style.display = 'none';
-            document.getElementById('passwordInput').value = '';
-            isAuthenticated = false;
-        };
-
-        // Control relay
-        window.controlRelay = async function (relay, state) {
-            if (!isAuthenticated) return;
-
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(btn => btn.disabled = true);
-
+        window.controlRelay = async (relay, state) => {
             try {
                 await set(ref(database, `relays/relay${relay}`), state);
-                console.log(`Relay ${relay} set to ${state ? 'ON' : 'OFF'}`);
             } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to control relay');
-            } finally {
-                setTimeout(() => {
-                    buttons.forEach(btn => btn.disabled = false);
-                }, 500);
+                alert("Permission Denied: " + error.message);
             }
         };
 
-        // Start listening to relay status
         function startListening() {
             onValue(ref(database, 'relays/relay1'), (snapshot) => {
                 const state = snapshot.val();
-                const statusEl = document.getElementById('relay1Status');
-                statusEl.textContent = state ? 'ON' : 'OFF';
-                statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
+                const el = document.getElementById('relay1Status');
+                el.textContent = state ? 'ON' : 'OFF';
+                el.className = 'relay-status ' + (state ? 'on' : 'off');
             });
 
             onValue(ref(database, 'relays/relay2'), (snapshot) => {
                 const state = snapshot.val();
-                const statusEl = document.getElementById('relay2Status');
-                statusEl.textContent = state ? 'ON' : 'OFF';
-                statusEl.className = 'relay-status ' + (state ? 'on' : 'off');
-            });
-
-            // Listen for logout from other devices
-            onValue(ref(database, '/security/authenticated'), (snapshot) => {
-                if (snapshot.val() === false && isAuthenticated) {
-                    logout();
-                }
+                const el = document.getElementById('relay2Status');
+                el.textContent = state ? 'ON' : 'OFF';
+                el.className = 'relay-status ' + (state ? 'on' : 'off');
             });
         }
-
-        console.log('Secure relay control initialized');
     </script>
 </body>
 
